@@ -2,7 +2,8 @@
 // Has helper functions for manipulating csv, txt, json, excel, zip, and image files
 import { readJSON, writeJSON } from "https://deno.land/x/flat@0.0.10/mod.ts";
 
-const json = await readJSON("data.json");
+const filename = Deno.args[0];
+const json = await readJSON(filename);
 
 // Step 2: Filter specific data we want to keep and write to a new JSON file
 const metrics = Object.keys(json); // convert property values into an array

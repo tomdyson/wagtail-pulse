@@ -5,25 +5,23 @@ on:
       - main
     paths:
       - .github/workflows/flat.yml
+      - process.js
   workflow_dispatch: null
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: 0 * * * *
 jobs:
   scheduled:
     runs-on: ubuntu-latest
-    steps: # This workflow has 3 steps
-      # The first step is to check out the repository so it can read the files inside of it and do other operations
+    steps:
       - name: Check out repo
         uses: actions/checkout@v2
-      # This step installs Deno, which is a new Javascript runtime that improves on Node. We'll use it for postprocessing later
       - name: Setup deno
         uses: denoland/setup-deno@main
         with:
           deno-version: v1.x
-      # The third step is a Flat Action step. We fetch the data in the http_url and save it as downloaded_filename
-      - name: Fetch data 
+      - name: Fetch data
         uses: githubocto/flat@v2
         with:
-          http_url: https://extract-wagtail-gh-pulse.deno.dev # The data to fetch every 5 minutes
-          downloaded_filename: data.json # The http_url gets saved and renamed in our repository as btc-price.json
-          postprocess: process.js # A postprocessing javascript or typescript file written in Deno
+          http_url: https://extract-wagtail-gh-pulse.deno.dev
+          downloaded_filename: wagtail-metrics.json
+          postprocess: process.js
