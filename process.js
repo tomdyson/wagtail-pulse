@@ -13,6 +13,8 @@ const metricArray = metrics.map((metric) => ({
   value: json[metric],
 }));
 
+console.log(metricArray);
+
 // Step 3. Write a new JSON file with our filtered data
 const newFilename = `data-postprocessed.json`; // name of a new file to be saved
 await writeJSON(newFilename, metricArray); // create a new JSON file with just the Bitcoin price
