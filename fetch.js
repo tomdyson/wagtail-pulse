@@ -39,7 +39,6 @@ async function handleRequest(request) {
         total_pull_requests: totalOpenPRs,
         total_issues: totalIssues,
         total_starcount: starcount,
-        test: "true",
       }),
       {
         headers: {
