@@ -13,6 +13,8 @@ const metricArray = metrics.map((metric) => ({
   value: json[metric],
 }));
 
+metricArray.push({ metric: "timestamp", value: new Date() });
+
 console.log(metricArray);
 
 // Step 3. Write a new JSON file with our filtered data
