@@ -1,3 +1,4 @@
+import { listenAndServe } from "https://deno.land/std/http/server.ts";
 import { cheerio } from "https://deno.land/x/cheerio@1.0.4/mod.ts";
 
 function justNumber(node) {
@@ -27,7 +28,9 @@ async function handleRequest(request) {
       $("span[data-content='Pull requests']").next(),
     );
     const totalIssues = justNumber($("span[data-content='Issues']").next());
-    const contributors = justNumber($c(".color-text-primary").first());
+    const contributors = justNumber(
+      $c(".color-fg-default").first(),
+    );
     const starcount = APIJSON["stargazers_count"];
     return new Response(
       JSON.stringify({
@@ -47,12 +50,13 @@ async function handleRequest(request) {
       },
     );
   }
+
   return new Response(
     JSON.stringify({ message: "couldn't process your request" }),
-    { status: 500 },
+    { status: 200 },
   );
 }
 
-addEventListener("fetch", (event) => {
-  event.respondWith(handleRequest(event.request));
-});
+console.log("Listening on http://localhost:8080");
+
+await listenAndServe(":8080", handleRequest);
