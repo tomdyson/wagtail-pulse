@@ -1,12 +1,17 @@
-import { listenAndServe } from "https://deno.land/std/http/server.ts";
-import { cheerio } from "https://deno.land/x/cheerio@1.0.4/mod.ts";
+import { listenAndServe } from "https://deno.land/std@0.61.0/http/server.ts";
+import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 
 function justNumber(node) {
-  const number = node.text().trim().match(/[0-9]+/)[0];
-  return parseInt(number);
+  const match = node.text().trim().match(/[0-9]+/);
+  if (match) {
+    return parseInt(match[0]);
+  } else {
+    console.error('Failed to extract number from:', node.html());
+    return null;
+  }
 }
 
-async function handleRequest(request) {
+async function handleRequest() {
   const resp = await fetch("https://github.com/wagtail/wagtail/pulse/monthly");
   const contribResp = await fetch(
     "https://github.com/wagtail/wagtail/pulse_diffstat_summary?period=monthly",
@@ -22,7 +27,7 @@ async function handleRequest(request) {
     const $c = cheerio.load(contribHTML);
     const newIssues = justNumber($('a[href="#new-issues"]'));
     const closedIssues = justNumber($('a[href="#closed-issues"]'));
-    const openPRs = justNumber($('a[href="#open-pull-requests"]'));
+    const openPRs = justNumber($('a[href="#proposed-pull-requests"]'));
     const mergedPRs = justNumber($('a[href="#merged-pull-requests"]'));
     const totalOpenPRs = justNumber(
       $("span[data-content='Pull requests']").next(),
@@ -30,25 +35,18 @@ async function handleRequest(request) {
     const totalIssues = justNumber($("span[data-content='Issues']").next());
     const contributors = justNumber(
       $c(".color-fg-default").first(),
-    );
-    const starcount = APIJSON["stargazers_count"];
-    return new Response(
-      JSON.stringify({
-        new_issues_last_month: newIssues,
-        closed_issues_last_month: closedIssues,
-        opened_pull_requests_last_month: openPRs,
-        merged_pull_requests_last_month: mergedPRs,
-        contributors_last_month: contributors,
-        total_pull_requests: totalOpenPRs,
-        total_issues: totalIssues,
-        total_starcount: starcount,
-      }),
-      {
-        headers: {
-          "content-type": "application/json; charset=UTF-8",
-        },
-      },
-    );
+      );
+      const starcount = APIJSON["stargazers_count"];
+    return JSON.stringify({
+          new_issues_last_month: newIssues,
+          closed_issues_last_month: closedIssues,
+          opened_pull_requests_last_month: openPRs,
+          merged_pull_requests_last_month: mergedPRs,
+          contributors_last_month: contributors,
+          total_pull_requests: totalOpenPRs,
+          total_issues: totalIssues,
+          total_starcount: starcount,
+        });
   }
 
   return new Response(
@@ -59,4 +57,12 @@ async function handleRequest(request) {
 
 console.log("Listening on http://localhost:8080");
 
-await listenAndServe(":8080", handleRequest);
+const options = { port: 8080 };
+listenAndServe(options, async (req) => {
+  req.respond({
+    body: await handleRequest(),
+    headers: new Headers({
+      "Content-Type": "application/json",
+    }),
+  });
+});
